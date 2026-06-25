@@ -630,7 +630,7 @@ async function startAnalysis() {
 // ─── Gemini API Call ─────────────────────────────────────────
 async function callGeminiAPI(pitchContent) {
   const prompt = buildPrompt(pitchContent);
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${state.apiKey}`;
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent?key=${state.apiKey}`;
 
   const response = await fetch(url, {
     method: 'POST',
