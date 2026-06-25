@@ -434,7 +434,7 @@ document.addEventListener('DOMContentLoaded', () => {
 // ─── API Key ─────────────────────────────────────────────────
 function saveApiKey() {
   const key = document.getElementById('api-key-input').value.trim();
-  if (!key || !key.startsWith('AIza')) {
+  if (!key || (!key.startsWith('AIza') && !key.startsWith('AQ'))) {
     shakeElement('api-key-input');
     return;
   }
