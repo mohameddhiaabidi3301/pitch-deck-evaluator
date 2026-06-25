@@ -707,7 +707,9 @@ async function callGeminiAPI(pitchContent) {
 
 // ─── Groq API Call ───────────────────────────────────────────
 async function callGroqAPI(pitchContent) {
-  const prompt = buildPrompt(pitchContent);
+  // Groq free tier: 6000 TPM — keep prompt small
+  const truncated = pitchContent.substring(0, 3000);
+  const prompt = buildPrompt(truncated);
   const url = 'https://api.groq.com/openai/v1/chat/completions';
 
   const response = await fetch(url, {
@@ -717,16 +719,16 @@ async function callGroqAPI(pitchContent) {
       'Authorization': `Bearer ${state.groqKey}`
     },
     body: JSON.stringify({
-      model: 'llama-3.1-8b-instant',
+      model: 'llama-3.3-70b-versatile',
       messages: [
         {
           role: 'system',
-          content: 'You are an elite venture capital analyst. Always respond with valid JSON only — no markdown fences, no extra text, no explanation. Just the raw JSON object.'
+          content: 'You are an elite venture capital analyst. Respond ONLY with a valid JSON object — no markdown, no commentary, no extra text. Just the raw JSON.'
         },
         { role: 'user', content: prompt }
       ],
       temperature: 0.4,
-      max_tokens: 4096
+      max_tokens: 2000
     })
   });
 
