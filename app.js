@@ -3,21 +3,111 @@
 // Built by Mohamed Dhia Al Islem Abidi
 // ============================================================
 
+// ─── Animated Background Canvas ────────────────────────────
+(function initCanvas() {
+  const canvas = document.getElementById('bg-canvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+
+  let W, H, dots, mouse = { x: -9999, y: -9999 };
+  const DOT_COUNT   = 90;
+  const MAX_DIST    = 150;
+  const DOT_COLOR   = 'rgba(96,165,250,';
+  const LINE_COLOR  = 'rgba(96,165,250,';
+
+  function resize() {
+    W = canvas.width  = window.innerWidth;
+    H = canvas.height = window.innerHeight;
+  }
+
+  function createDots() {
+    dots = Array.from({ length: DOT_COUNT }, () => ({
+      x:  Math.random() * W,
+      y:  Math.random() * H,
+      vx: (Math.random() - 0.5) * 0.25,
+      vy: (Math.random() - 0.5) * 0.25,
+      r:  Math.random() * 1.2 + 0.6
+    }));
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+
+    // Move
+    dots.forEach(d => {
+      d.x += d.vx;
+      d.y += d.vy;
+      if (d.x < 0 || d.x > W) d.vx *= -1;
+      if (d.y < 0 || d.y > H) d.vy *= -1;
+    });
+
+    // Lines between nearby dots
+    for (let i = 0; i < dots.length; i++) {
+      for (let j = i + 1; j < dots.length; j++) {
+        const dx = dots[i].x - dots[j].x;
+        const dy = dots[i].y - dots[j].y;
+        const dist = Math.sqrt(dx*dx + dy*dy);
+        if (dist < MAX_DIST) {
+          const alpha = (1 - dist / MAX_DIST) * 0.18;
+          ctx.beginPath();
+          ctx.strokeStyle = LINE_COLOR + alpha + ')';
+          ctx.lineWidth   = 0.6;
+          ctx.moveTo(dots[i].x, dots[i].y);
+          ctx.lineTo(dots[j].x, dots[j].y);
+          ctx.stroke();
+        }
+      }
+      // React to mouse
+      const mx = dots[i].x - mouse.x;
+      const my = dots[i].y - mouse.y;
+      const md = Math.sqrt(mx*mx + my*my);
+      if (md < 140) {
+        const alpha = (1 - md / 140) * 0.35;
+        ctx.beginPath();
+        ctx.strokeStyle = LINE_COLOR + alpha + ')';
+        ctx.lineWidth   = 0.8;
+        ctx.moveTo(dots[i].x, dots[i].y);
+        ctx.lineTo(mouse.x, mouse.y);
+        ctx.stroke();
+      }
+    }
+
+    // Dots
+    dots.forEach(d => {
+      ctx.beginPath();
+      ctx.arc(d.x, d.y, d.r, 0, Math.PI * 2);
+      ctx.fillStyle = DOT_COLOR + '0.45)';
+      ctx.fill();
+    });
+
+    requestAnimationFrame(draw);
+  }
+
+  window.addEventListener('resize', () => { resize(); createDots(); });
+  window.addEventListener('mousemove', e => { mouse.x = e.clientX; mouse.y = e.clientY; });
+  window.addEventListener('mouseleave', () => { mouse.x = -9999; mouse.y = -9999; });
+
+  resize();
+  createDots();
+  draw();
+})();
+
 // ─── PDF.js setup ───────────────────────────────────────────
 pdfjsLib.GlobalWorkerOptions.workerSrc =
   'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
 // ─── State ──────────────────────────────────────────────────
 let state = {
-  apiKey: localStorage.getItem('ventureai_key') || '',
-  activeTab: 'upload',
-  pdfText: '',
-  pastedText: '',
-  activeSample: '',
-  isAnalyzing: false
+  apiKey:      localStorage.getItem('ventureai_key') || '',
+  activeTab:   'upload',
+  pdfText:     '',
+  pastedText:  '',
+  activeSample:'',
+  isAnalyzing: false,
+  isDemoMode:  false
 };
 
-// ─── Sample pitch deck texts ────────────────────────────────
+// ─── Sample Pitch Deck Texts ─────────────────────────────────
 const SAMPLES = {
   airbnb: `SLIDE 1 — COVER
 Airbnb
@@ -250,6 +340,79 @@ Use of funds:
 Goal: reach $100K MRR in 18 months and raise Series A`
 };
 
+// ─── Demo Mode Mock Response ─────────────────────────────────
+const DEMO_RESPONSE = {
+  startupName: "Airbnb (Demo Mode)",
+  overallScore: 8.2,
+  verdict: "Strong Investment Candidate",
+  verdictDescription: "Airbnb's 2009 seed deck demonstrates a clear market insight and a differentiated solution to a genuine problem. The team's execution ability is evident from early traction, making this a compelling opportunity at the seed stage.",
+  clarityScore: 8,
+  narrativeScore: 9,
+  psfitScore: 8,
+  clarity: {
+    strengths: [
+      "Clean problem-solution framework that is immediately understandable to investors",
+      "Concise business model with transparent transaction mechanics (10% commission)",
+      "Market sizing is anchored in concrete data rather than top-down assumptions"
+    ],
+    weaknesses: [
+      "Financial projections section lacks granularity — no monthly burn or runway figures",
+      "Competitive landscape slide is absent; only briefly references three unnamed competitors"
+    ]
+  },
+  narrative: {
+    strengths: [
+      "The deck follows a textbook investor narrative: problem, solution, market, traction, ask",
+      "Emotional hook around cultural connection elevates it beyond a purely transactional framing",
+      "The go-to-market strategy is phased and credible, moving from events to cities to international"
+    ],
+    weaknesses: [
+      "Team slide lacks advisor network or institutional credibility signals",
+      "Transition from product to market opportunity could be tighter"
+    ],
+    insights: [
+      "The 'waste reduction' framing of unused private space is a unique angle that resonates with institutional ESG sensibilities",
+      "Anchoring launch strategy around high-profile events (SXSW, DNC) was a masterclass in demand capture"
+    ]
+  },
+  problemSolutionFit: {
+    problemStatement: "Hotel accommodation is expensive, impersonal, and fails to serve budget-conscious travelers seeking authentic local experiences.",
+    solutionStatement: "A trusted peer-to-peer marketplace enabling homeowners to monetize unused space while providing travelers with affordable, locally-curated alternatives.",
+    strengths: [
+      "The solution directly addresses all three stated pain points: cost, connection, and waste",
+      "Two-sided network effect built into the model creates a natural competitive moat over time",
+      "Early price point ($25/night) creates a defensible value proposition against hotel alternatives"
+    ],
+    risks: [
+      "Trust and safety risk — the deck does not address how disputes between hosts and guests are handled",
+      "Regulatory exposure in key urban markets is not acknowledged",
+      "Revenue at $200/week at pitch time is very early; burn rate versus funding ask needs more justification"
+    ],
+    insights: [
+      "The marketplace model with 10% take rate is capital-efficient and highly scalable",
+      "Host supply acquisition cost of $6 via Craigslist suggests excellent early unit economics"
+    ]
+  },
+  investorSummary: {
+    topStrength: "Proven early traction through creative distribution (event-based demand capture) combined with a large, underserved market — a rare combination at the seed stage.",
+    biggestRisk: "Trust and safety infrastructure is entirely absent from the deck. Without this, the platform cannot scale; one incident can destroy brand credibility.",
+    criticalGap: "No financial model showing path to profitability or unit economics beyond commission rate and booking value.",
+    vcRecommendation: "This is a fundable deck. The founding team demonstrates resourcefulness and the business model is sound. We would proceed to due diligence with a focus on the trust/safety framework and a more detailed financial model before committing."
+  },
+  narrativeSections: {
+    cover: "present",
+    problem: "present",
+    solution: "present",
+    product: "present",
+    marketOpportunity: "present",
+    businessModel: "present",
+    traction: "present",
+    goToMarket: "present",
+    team: "present",
+    ask: "present"
+  }
+};
+
 // ─── Initialize ──────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
   if (state.apiKey) {
@@ -282,14 +445,34 @@ function saveApiKey() {
 function showConnected() {
   document.getElementById('api-setup').classList.add('hidden');
   document.getElementById('api-connected').classList.remove('hidden');
+  document.getElementById('demo-connected').classList.add('hidden');
 }
 
 function disconnectApi() {
   state.apiKey = '';
+  state.isDemoMode = false;
   localStorage.removeItem('ventureai_key');
   document.getElementById('api-connected').classList.add('hidden');
+  document.getElementById('demo-connected').classList.add('hidden');
   document.getElementById('api-setup').classList.remove('hidden');
   document.getElementById('api-key-input').value = '';
+}
+
+// ─── Demo Mode ────────────────────────────────────────────────
+function activateDemoMode() {
+  state.isDemoMode = true;
+  document.getElementById('api-setup').classList.add('hidden');
+  document.getElementById('api-connected').classList.add('hidden');
+  document.getElementById('demo-connected').classList.remove('hidden');
+  // Auto-select Airbnb sample for demo
+  switchTab('sample');
+  loadSample('airbnb');
+}
+
+function deactivateDemoMode() {
+  state.isDemoMode = false;
+  document.getElementById('demo-connected').classList.add('hidden');
+  document.getElementById('api-setup').classList.remove('hidden');
 }
 
 // ─── Tab Switching ───────────────────────────────────────────
@@ -328,14 +511,14 @@ async function processFile(file) {
       const pdf = await pdfjsLib.getDocument(typedArray).promise;
       let text = '';
       for (let i = 1; i <= pdf.numPages; i++) {
-        const page = await pdf.getPage(i);
+        const page    = await pdf.getPage(i);
         const content = await page.getTextContent();
         const pageText = content.items.map(item => item.str).join(' ');
         text += `\n\nSLIDE ${i}\n${pageText}`;
       }
       state.pdfText = text;
       document.getElementById('file-info').classList.remove('hidden');
-      document.getElementById('file-name').textContent = file.name;
+      document.getElementById('file-name').textContent  = file.name;
       document.getElementById('file-pages').textContent = `· ${pdf.numPages} pages extracted`;
     } catch(err) {
       alert('Could not extract text from this PDF. Please try the Paste Text tab instead.');
@@ -370,23 +553,24 @@ function loadSample(name) {
 
 // ─── Get Current Pitch Content ───────────────────────────────
 function getPitchContent() {
-  if (state.activeTab === 'upload') return state.pdfText;
-  if (state.activeTab === 'text') return state.pastedText;
-  if (state.activeTab === 'sample') return state.activeSample ? SAMPLES[state.activeSample] : '';
+  if (state.activeTab === 'upload')  return state.pdfText;
+  if (state.activeTab === 'text')    return state.pastedText;
+  if (state.activeTab === 'sample')  return state.activeSample ? SAMPLES[state.activeSample] : '';
   return '';
 }
 
 // ─── Main Analysis ───────────────────────────────────────────
 async function startAnalysis() {
-  if (!state.apiKey) {
-    alert('Please connect your Gemini API key first.');
-    document.getElementById('api-key-input')?.focus();
+  // Allow demo mode to bypass API key check
+  if (!state.apiKey && !state.isDemoMode) {
+    shakeElement('api-key-input');
+    document.getElementById('hero-section').scrollIntoView({ behavior: 'smooth' });
     return;
   }
 
   const pitchContent = getPitchContent();
   if (!pitchContent || pitchContent.trim().length < 80) {
-    alert('Please provide more pitch deck content (upload a PDF, paste text, or select a sample deck).');
+    alert('Please provide pitch deck content — upload a PDF, paste text, or select a sample deck.');
     return;
   }
 
@@ -413,16 +597,24 @@ async function startAnalysis() {
     } else {
       clearInterval(stepInterval);
     }
-  }, 900);
+  }, state.isDemoMode ? 500 : 900);
 
   try {
-    const result = await callGeminiAPI(pitchContent);
+    let result;
+    if (state.isDemoMode) {
+      // Simulate processing delay in demo mode
+      await delay(3200);
+      result = DEMO_RESPONSE;
+    } else {
+      result = await callGeminiAPI(pitchContent);
+    }
+
     clearInterval(stepInterval);
     steps.forEach(s => {
       document.getElementById(s).classList.remove('active');
       document.getElementById(s).classList.add('done');
     });
-    await delay(600);
+    await delay(500);
     renderResults(result);
   } catch (err) {
     clearInterval(stepInterval);
@@ -461,7 +653,6 @@ async function callGeminiAPI(pitchContent) {
   const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text;
   if (!rawText) throw new Error('No response from Gemini API');
 
-  // Parse JSON
   const cleaned = rawText.replace(/```json\n?/g,'').replace(/```\n?/g,'').trim();
   return JSON.parse(cleaned);
 }
@@ -564,70 +755,66 @@ function renderResults(data) {
   document.getElementById('results-section').classList.add('fade-in');
 
   // Startup name
-  document.getElementById('startup-name-display').textContent = data.startupName || 'Analyzed Startup';
+  const nameDisplay = data.startupName || 'Analyzed Startup';
+  document.getElementById('startup-name-display').textContent =
+    state.isDemoMode ? `${nameDisplay} — Demo Preview` : nameDisplay;
 
   // Overall score ring
   const score = data.overallScore || 0;
   const circumference = 326.7;
   const offset = circumference - (score / 10) * circumference;
+
+  // Inject gradient defs
+  const svg = document.querySelector('.score-ring');
+  if (!svg.querySelector('defs')) {
+    const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+    defs.innerHTML = `<linearGradient id="ringGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%"   style="stop-color:#60a5fa"/>
+      <stop offset="100%" style="stop-color:#818cf8"/>
+    </linearGradient>`;
+    svg.insertBefore(defs, svg.firstChild);
+  }
+
   setTimeout(() => {
     document.getElementById('ring-fill').style.strokeDashoffset = offset;
     animateNumber('overall-score', 0, score, 1500, 1);
   }, 100);
 
-  // Add SVG gradient
-  const svg = document.querySelector('.score-ring');
-  if (!svg.querySelector('defs')) {
-    const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
-    defs.innerHTML = `<linearGradient id="ringGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#4f8ef7"/>
-      <stop offset="100%" style="stop-color:#7c3aed"/>
-    </linearGradient>`;
-    svg.insertBefore(defs, svg.firstChild);
-  }
-
-  // Verdict
   document.getElementById('score-verdict').textContent = data.verdict || '—';
-  document.getElementById('score-desc').textContent = data.verdictDescription || '';
+  document.getElementById('score-desc').textContent    = data.verdictDescription || '';
 
-  // Dimension bars
-  setBar('clarity', data.clarityScore, 'num-clarity');
+  setBar('clarity',   data.clarityScore,   'num-clarity');
   setBar('narrative', data.narrativeScore, 'num-narrative');
-  setBar('psfit', data.psfitScore, 'num-psfit');
+  setBar('psfit',     data.psfitScore,     'num-psfit');
 
-  // Dimension badges
-  document.getElementById('badge-clarity').textContent = `${data.clarityScore}/10`;
+  document.getElementById('badge-clarity').textContent   = `${data.clarityScore}/10`;
   document.getElementById('badge-narrative').textContent = `${data.narrativeScore}/10`;
-  document.getElementById('badge-psfit').textContent = `${data.psfitScore}/10`;
+  document.getElementById('badge-psfit').textContent     = `${data.psfitScore}/10`;
 
-  // Render dimension bodies
   renderDimBody('body-clarity', [
-    { type: 'strengths', title: '✦ Strengths', points: data.clarity?.strengths },
-    { type: 'weaknesses', title: '⚠ Weaknesses', points: data.clarity?.weaknesses }
+    { type: 'strengths',  title: 'Strengths',  points: data.clarity?.strengths },
+    { type: 'weaknesses', title: 'Weaknesses', points: data.clarity?.weaknesses }
   ]);
 
   renderDimBody('body-narrative', [
-    { type: 'strengths', title: '✦ Strengths', points: data.narrative?.strengths },
-    { type: 'weaknesses', title: '⚠ Weaknesses', points: data.narrative?.weaknesses },
-    { type: 'insights', title: '◆ Insights', points: data.narrative?.insights }
+    { type: 'strengths',  title: 'Strengths',  points: data.narrative?.strengths },
+    { type: 'weaknesses', title: 'Weaknesses', points: data.narrative?.weaknesses },
+    { type: 'insights',   title: 'Insights',   points: data.narrative?.insights }
   ]);
 
   renderDimBody('body-psfit', [
-    { type: 'strengths', title: '✦ Strengths', points: data.problemSolutionFit?.strengths },
-    { type: 'risks', title: '⚡ Risks', points: data.problemSolutionFit?.risks },
-    { type: 'insights', title: '◆ Insights', points: data.problemSolutionFit?.insights }
+    { type: 'strengths',  title: 'Strengths',  points: data.problemSolutionFit?.strengths },
+    { type: 'risks',      title: 'Risks',      points: data.problemSolutionFit?.risks },
+    { type: 'insights',   title: 'Insights',   points: data.problemSolutionFit?.insights }
   ]);
 
-  // Investor summary
-  document.getElementById('is-top-strength').textContent = data.investorSummary?.topStrength || '—';
-  document.getElementById('is-top-risk').textContent = data.investorSummary?.biggestRisk || '—';
-  document.getElementById('is-missing').textContent = data.investorSummary?.criticalGap || '—';
+  document.getElementById('is-top-strength').textContent   = data.investorSummary?.topStrength    || '—';
+  document.getElementById('is-top-risk').textContent       = data.investorSummary?.biggestRisk     || '—';
+  document.getElementById('is-missing').textContent        = data.investorSummary?.criticalGap     || '—';
   document.getElementById('is-recommendation').textContent = data.investorSummary?.vcRecommendation || '—';
 
-  // Narrative flow
   renderNarrativeFlow(data.narrativeSections);
 
-  // Scroll to results
   document.getElementById('results-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
@@ -647,9 +834,7 @@ function renderDimBody(containerId, sections) {
     const div = document.createElement('div');
     div.className = 'dim-section';
     div.innerHTML = `
-      <div class="dim-section-title ${sec.type}">
-        ${sec.title}
-      </div>
+      <div class="dim-section-title ${sec.type}">${sec.title}</div>
       <ul class="dim-points ${sec.type}">
         ${sec.points.map(p => `
           <li class="dim-point">
@@ -671,7 +856,7 @@ function renderNarrativeFlow(sections) {
     product: 'Product', marketOpportunity: 'Market', businessModel: 'Biz Model',
     traction: 'Traction', goToMarket: 'GTM', team: 'Team', ask: 'Ask'
   };
-  const statusLabels = { present: '✓ Strong', weak: '~ Weak', missing: '✕ Missing' };
+  const statusLabels = { present: 'Strong', weak: 'Weak', missing: 'Missing' };
   container.innerHTML = Object.keys(labels).map(key => `
     <div class="nf-section ${sections[key] || 'missing'}">
       <div class="nf-label">${labels[key]}</div>
@@ -690,9 +875,9 @@ function exportReport() {
 <style>
   body { font-family: Arial, sans-serif; max-width: 900px; margin: 0 auto; padding: 40px; background: #fff; color: #111; }
   h1 { font-size: 24px; margin-bottom: 8px; }
-  h2 { font-size: 18px; border-bottom: 2px solid #4f8ef7; padding-bottom: 8px; margin-top: 32px; }
+  h2 { font-size: 18px; border-bottom: 2px solid #60a5fa; padding-bottom: 8px; margin-top: 32px; }
   h3 { font-size: 14px; color: #555; text-transform: uppercase; letter-spacing: 1px; margin-top: 20px; }
-  .score { font-size: 48px; font-weight: 900; color: #4f8ef7; }
+  .score { font-size: 48px; font-weight: 900; color: #60a5fa; }
   .dim { background: #f7f9ff; border-radius: 12px; padding: 20px; margin: 16px 0; }
   ul { padding-left: 20px; } li { margin: 6px 0; font-size: 14px; }
   .strength { color: #10b981; } .weakness { color: #f59e0b; } .risk { color: #f43f5e; }
@@ -703,23 +888,23 @@ function exportReport() {
 <h1>VentureAI — Investor Evaluation Report</h1>
 <p style="color:#666">Generated on ${new Date().toLocaleDateString()} by VentureAI</p>
 ${el.innerHTML}
-<div class="footer">Generated by VentureAI · Built by Mohamed Dhia Al Islem Abidi · Powered by Gemini AI</div>
+<div class="footer">Generated by VentureAI — Built by Mohamed Dhia Al Islem Abidi — Powered by Gemini AI</div>
 </body>
 </html>`;
   const blob = new Blob([reportHTML], { type: 'text/html' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href     = url;
   a.download = 'VentureAI_Report.html';
   a.click();
 }
 
 // ─── Reset ───────────────────────────────────────────────────
 function resetApp() {
-  state.pdfText = '';
-  state.pastedText = '';
+  state.pdfText      = '';
+  state.pastedText   = '';
   state.activeSample = '';
-  state.isAnalyzing = false;
+  state.isAnalyzing  = false;
 
   document.getElementById('results-section').classList.add('hidden');
   document.getElementById('loading-section').classList.add('hidden');
@@ -733,15 +918,15 @@ function resetApp() {
     if (i === 1) el.classList.add('active');
   }
 
-  // Reset bars
   ['clarity','narrative','psfit'].forEach(d => {
     document.getElementById(`bar-${d}`).style.width = '0%';
   });
 
-  // Clear file
   clearFile();
   document.getElementById('sample-loaded').classList.add('hidden');
-  ['airbnb','uber','buffer'].forEach(s => document.getElementById(`sample-${s}`).classList.remove('selected'));
+  ['airbnb','uber','buffer'].forEach(s =>
+    document.getElementById(`sample-${s}`).classList.remove('selected')
+  );
 
   document.getElementById('hero-section').scrollIntoView({ behavior: 'smooth' });
 }
@@ -750,10 +935,10 @@ function resetApp() {
 function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
 
 function animateNumber(id, from, to, duration, decimals = 0) {
-  const el = document.getElementById(id);
+  const el    = document.getElementById(id);
   const start = performance.now();
   function update(now) {
-    const t = Math.min((now - start) / duration, 1);
+    const t    = Math.min((now - start) / duration, 1);
     const ease = t < 0.5 ? 2*t*t : -1+(4-2*t)*t;
     el.textContent = (from + (to - from) * ease).toFixed(decimals);
     if (t < 1) requestAnimationFrame(update);
@@ -763,21 +948,9 @@ function animateNumber(id, from, to, duration, decimals = 0) {
 
 function shakeElement(id) {
   const el = document.getElementById(id);
+  if (!el) return;
   el.style.animation = 'none';
   el.offsetHeight;
   el.style.animation = 'shake 0.4s ease';
   setTimeout(() => el.style.animation = '', 400);
 }
-
-// Add shake keyframe
-const shakeStyle = document.createElement('style');
-shakeStyle.textContent = `
-  @keyframes shake {
-    0%,100% { transform: translateX(0); }
-    20% { transform: translateX(-8px); }
-    40% { transform: translateX(8px); }
-    60% { transform: translateX(-5px); }
-    80% { transform: translateX(5px); }
-  }
-`;
-document.head.appendChild(shakeStyle);

@@ -7,450 +7,482 @@
   <meta name="description" content="Evaluate startup pitch decks like a seasoned investor using AI. Get structured feedback on clarity, storytelling, and problem-solution fit." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
 
+  <!-- Animated Background Canvas -->
+  <canvas id="bg-canvas"></canvas>
 
-  <!-- Header -->
-  <header class="header">
-    <div class="header-inner">
-      <div class="logo">
-        <div class="logo-icon">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
-          </svg>
+  <div class="layout">
+
+    <!-- Header -->
+    <header class="header">
+      <div class="header-inner">
+        <div class="logo">
+          <div class="logo-icon">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+            </svg>
+          </div>
+          <span class="logo-text">VentureAI</span>
         </div>
-        <span class="logo-text">VentureAI</span>
+        <div class="header-badge">
+          <span class="badge-dot"></span>
+          Powered by Gemini
+        </div>
       </div>
-      <div class="header-badge">
-        <span class="badge-dot"></span>
-        Powered by Gemini
-      </div>
-    </div>
-  </header>
+    </header>
 
-  <!-- Main Content -->
-  <main>
-    <!-- Hero Section -->
-    <section class="hero" id="hero-section">
-      <div class="hero-tag">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
-        Investor-grade pitch deck analysis
-      </div>
-      <h1 class="hero-title">
-        Evaluate Your Pitch Deck<br />
-        <span class="gradient-text">Like a Top-Tier VC</span>
-      </h1>
-      <p class="hero-subtitle">
-        Upload your pitch deck and receive institutional-grade analysis across three critical investor dimensions — clarity, storytelling, and problem-solution fit.
-      </p>
+    <!-- Main Content -->
+    <main>
 
-      <!-- API Key Setup -->
-      <div class="api-setup" id="api-setup">
-        <div class="api-card">
-          <div class="api-header">
-            <div class="api-icon">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+      <!-- Hero Section -->
+      <section class="hero" id="hero-section">
+        <div class="hero-tag">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+          Investor-grade pitch deck analysis
+        </div>
+        <h1 class="hero-title">
+          Evaluate Your Pitch Deck<br />
+          <span class="gradient-text">Like a Top-Tier VC</span>
+        </h1>
+        <p class="hero-subtitle">
+          Upload your pitch deck and receive institutional-grade analysis across three critical investor dimensions — clarity, storytelling, and problem-solution fit.
+        </p>
+
+        <!-- API Key Setup -->
+        <div class="api-setup" id="api-setup">
+          <div class="api-card">
+            <div class="api-header">
+              <div class="api-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+              </div>
+              <div>
+                <div class="api-title">Connect Gemini API</div>
+                <div class="api-subtitle">Free at aistudio.google.com — no credit card required</div>
+              </div>
             </div>
-            <div>
-              <div class="api-title">Connect Gemini API</div>
-              <div class="api-subtitle">Free at aistudio.google.com — no credit card</div>
+            <div class="api-input-row">
+              <input type="password" id="api-key-input" class="api-input" placeholder="AIza..." autocomplete="off" />
+              <button class="btn-primary" id="save-api-btn" onclick="saveApiKey()">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>
+                Connect
+              </button>
+            </div>
+            <div class="api-hint">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+              Get your free key at <a href="https://aistudio.google.com" target="_blank">aistudio.google.com</a> — Get API Key
             </div>
           </div>
-          <div class="api-input-row">
-            <input type="password" id="api-key-input" class="api-input" placeholder="AIza..." autocomplete="off" />
-            <button class="btn-primary" id="save-api-btn" onclick="saveApiKey()">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>
-              Connect
+          <!-- Demo Option -->
+          <div class="demo-banner">
+            <span class="demo-divider"></span>
+            <span>or</span>
+            <span class="demo-divider"></span>
+          </div>
+          <div style="text-align:center;margin-top:10px;">
+            <button class="btn-demo" id="demo-mode-btn" onclick="activateDemoMode()">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:inline;vertical-align:middle;margin-right:5px"><path d="M5 3l14 9-14 9V3z"/></svg>
+              Try Demo Mode — No API Key Needed
             </button>
           </div>
-          <div class="api-hint">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
-            Get your free key at <a href="https://aistudio.google.com" target="_blank">aistudio.google.com</a> → Get API Key
+        </div>
+
+        <!-- Connected State -->
+        <div class="api-connected hidden" id="api-connected">
+          <div class="connected-badge">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>
+            Gemini Connected
           </div>
-        </div>
-      </div>
-
-      <!-- Connected State -->
-      <div class="api-connected hidden" id="api-connected">
-        <div class="connected-badge">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>
-          Gemini Connected
-        </div>
-        <button class="btn-ghost-sm" onclick="disconnectApi()">Change Key</button>
-      </div>
-    </section>
-
-    <!-- Upload Section -->
-    <section class="upload-section" id="upload-section">
-      <div class="section-container">
-
-        <!-- Tabs -->
-        <div class="tabs">
-          <button class="tab active" id="tab-upload" onclick="switchTab('upload')">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-            Upload PDF
-          </button>
-          <button class="tab" id="tab-text" onclick="switchTab('text')">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
-            Paste Text
-          </button>
-          <button class="tab" id="tab-sample" onclick="switchTab('sample')">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-            Sample Decks
-          </button>
+          <button class="btn-ghost-sm" onclick="disconnectApi()">Change Key</button>
         </div>
 
-        <!-- Upload Tab -->
-        <div class="tab-content" id="content-upload">
-          <div class="drop-zone" id="drop-zone"
-            ondrop="handleDrop(event)"
-            ondragover="handleDragOver(event)"
-            ondragleave="handleDragLeave(event)"
-            onclick="document.getElementById('file-input').click()">
-            <div class="drop-icon">
-              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        <!-- Demo Mode Active State -->
+        <div class="api-connected hidden" id="demo-connected">
+          <div class="demo-mode-ribbon">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 3l14 9-14 9V3z"/></svg>
+            Demo Mode Active
+          </div>
+          <button class="btn-ghost-sm" onclick="deactivateDemoMode()">Exit Demo</button>
+        </div>
+
+      </section>
+
+      <!-- Upload Section -->
+      <section class="upload-section" id="upload-section">
+        <div class="section-container">
+
+          <!-- Tabs -->
+          <div class="tabs">
+            <button class="tab active" id="tab-upload" onclick="switchTab('upload')">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+              Upload PDF
+            </button>
+            <button class="tab" id="tab-text" onclick="switchTab('text')">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+              Paste Text
+            </button>
+            <button class="tab" id="tab-sample" onclick="switchTab('sample')">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+              Sample Decks
+            </button>
+          </div>
+
+          <!-- Upload Tab -->
+          <div class="tab-content" id="content-upload">
+            <div class="drop-zone" id="drop-zone"
+              ondrop="handleDrop(event)"
+              ondragover="handleDragOver(event)"
+              ondragleave="handleDragLeave(event)"
+              onclick="document.getElementById('file-input').click()">
+              <div class="drop-icon">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+              </div>
+              <div class="drop-title">Drop your pitch deck here</div>
+              <div class="drop-subtitle">or click to browse — PDF supported</div>
+              <div class="drop-formats">
+                <span class="format-tag">PDF</span>
+              </div>
             </div>
-            <div class="drop-title">Drop your pitch deck here</div>
-            <div class="drop-subtitle">or click to browse — PDF files supported</div>
-            <div class="drop-formats">
-              <span class="format-tag">PDF</span>
+            <input type="file" id="file-input" accept=".pdf" style="display:none" onchange="handleFileSelect(event)" />
+            <div class="file-info hidden" id="file-info">
+              <div class="file-info-inner">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>
+                <span id="file-name">filename.pdf</span>
+                <span id="file-pages" class="file-pages"></span>
+                <button class="remove-file" onclick="clearFile()">x</button>
+              </div>
             </div>
           </div>
-          <input type="file" id="file-input" accept=".pdf" style="display:none" onchange="handleFileSelect(event)" />
-          <div class="file-info hidden" id="file-info">
-            <div class="file-info-inner">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>
-              <span id="file-name">filename.pdf</span>
-              <span id="file-pages" class="file-pages"></span>
-              <button class="remove-file" onclick="clearFile()">✕</button>
-            </div>
-          </div>
-        </div>
 
-        <!-- Text Tab -->
-        <div class="tab-content hidden" id="content-text">
-          <div class="text-area-wrap">
-            <textarea id="pitch-text" class="pitch-textarea" placeholder="Paste your pitch deck content here. Include slide titles and content, e.g.:
+          <!-- Text Tab -->
+          <div class="tab-content hidden" id="content-text">
+            <div class="text-area-wrap">
+              <textarea id="pitch-text" class="pitch-textarea" placeholder="Paste your pitch deck content here. Include slide titles and content, e.g.:
 
 SLIDE 1 — COVER
 CompanyName | AI-powered solution for X
 
-SLIDE 2 — PROBLEM  
+SLIDE 2 — PROBLEM
 Description of the problem...
 
 SLIDE 3 — SOLUTION
 How you solve it...
 
 ...and so on through all slides."></textarea>
-            <div class="textarea-footer">
-              <span id="char-count">0 characters</span>
-              <button class="btn-ghost-sm" onclick="clearText()">Clear</button>
-            </div>
-          </div>
-        </div>
-
-        <!-- Sample Tab -->
-        <div class="tab-content hidden" id="content-sample">
-          <div class="samples-grid">
-            <div class="sample-card" onclick="loadSample('airbnb')" id="sample-airbnb">
-              <div class="sample-logo">AIR</div>
-              <div class="sample-info">
-                <div class="sample-name">Airbnb</div>
-                <div class="sample-desc">2009 seed deck — raised $600K from Sequoia</div>
-                <div class="sample-tags">
-                  <span class="stag">Marketplace</span>
-                  <span class="stag">Travel</span>
-                </div>
+              <div class="textarea-footer">
+                <span id="char-count">0 characters</span>
+                <button class="btn-ghost-sm" onclick="clearText()">Clear</button>
               </div>
-              <div class="sample-arrow">→</div>
             </div>
-            <div class="sample-card" onclick="loadSample('uber')" id="sample-uber">
-              <div class="sample-logo">UBR</div>
-              <div class="sample-info">
-                <div class="sample-name">Uber</div>
-                <div class="sample-desc">2008 original pitch deck — seed round</div>
-                <div class="sample-tags">
-                  <span class="stag">Mobility</span>
-                  <span class="stag">On-demand</span>
+          </div>
+
+          <!-- Sample Tab -->
+          <div class="tab-content hidden" id="content-sample">
+            <div class="samples-grid">
+              <div class="sample-card" onclick="loadSample('airbnb')" id="sample-airbnb">
+                <div class="sample-logo">AIR</div>
+                <div class="sample-info">
+                  <div class="sample-name">Airbnb</div>
+                  <div class="sample-desc">2009 seed deck — raised $600K from Sequoia</div>
+                  <div class="sample-tags">
+                    <span class="stag">Marketplace</span>
+                    <span class="stag">Travel</span>
+                  </div>
                 </div>
+                <div class="sample-arrow">&#8594;</div>
               </div>
-              <div class="sample-arrow">→</div>
-            </div>
-            <div class="sample-card" onclick="loadSample('buffer')" id="sample-buffer">
-              <div class="sample-logo">BUF</div>
-              <div class="sample-info">
-                <div class="sample-name">Buffer</div>
-                <div class="sample-desc">$500K raise — transparent seed round deck</div>
-                <div class="sample-tags">
-                  <span class="stag">SaaS</span>
-                  <span class="stag">Social Media</span>
+              <div class="sample-card" onclick="loadSample('uber')" id="sample-uber">
+                <div class="sample-logo">UBR</div>
+                <div class="sample-info">
+                  <div class="sample-name">Uber</div>
+                  <div class="sample-desc">2008 original pitch deck — seed round</div>
+                  <div class="sample-tags">
+                    <span class="stag">Mobility</span>
+                    <span class="stag">On-demand</span>
+                  </div>
                 </div>
+                <div class="sample-arrow">&#8594;</div>
               </div>
-              <div class="sample-arrow">→</div>
+              <div class="sample-card" onclick="loadSample('buffer')" id="sample-buffer">
+                <div class="sample-logo">BUF</div>
+                <div class="sample-info">
+                  <div class="sample-name">Buffer</div>
+                  <div class="sample-desc">$500K raise — transparent seed round deck</div>
+                  <div class="sample-tags">
+                    <span class="stag">SaaS</span>
+                    <span class="stag">Social</span>
+                  </div>
+                </div>
+                <div class="sample-arrow">&#8594;</div>
+              </div>
             </div>
-          </div>
-          <div class="sample-loaded hidden" id="sample-loaded">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>
-            <span id="sample-loaded-name"></span> pitch deck loaded and ready to evaluate
-          </div>
-        </div>
-
-        <!-- Analyze Button -->
-        <div class="analyze-row">
-          <button class="btn-analyze" id="analyze-btn" onclick="startAnalysis()">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-            Run Analysis
-          </button>
-          <div class="analyze-note">Typically 15–30 seconds</div>
-        </div>
-
-      </div>
-    </section>
-
-    <!-- Loading Section -->
-    <section class="loading-section hidden" id="loading-section">
-      <div class="loading-inner">
-        <div class="loading-orb">
-          <div class="loading-pulse"></div>
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
-        </div>
-        <div class="loading-title">Analyzing your pitch deck</div>
-        <div class="loading-steps">
-          <div class="loading-step active" id="step-1">
-            <div class="step-dot"></div>
-            <span>Extracting content from slides</span>
-          </div>
-          <div class="loading-step" id="step-2">
-            <div class="step-dot"></div>
-            <span>Identifying narrative sections</span>
-          </div>
-          <div class="loading-step" id="step-3">
-            <div class="step-dot"></div>
-            <span>Evaluating investor communication clarity</span>
-          </div>
-          <div class="loading-step" id="step-4">
-            <div class="step-dot"></div>
-            <span>Assessing founder storytelling flow</span>
-          </div>
-          <div class="loading-step" id="step-5">
-            <div class="step-dot"></div>
-            <span>Validating problem–solution fit</span>
-          </div>
-          <div class="loading-step" id="step-6">
-            <div class="step-dot"></div>
-            <span>Generating investor report</span>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Results Section -->
-    <section class="results-section hidden" id="results-section">
-      <div class="results-container">
-
-        <!-- Results Header -->
-        <div class="results-header">
-          <div class="results-header-left">
-            <div class="results-badge">
+            <div class="sample-loaded hidden" id="sample-loaded">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>
-              Analysis Complete
+              <span id="sample-loaded-name"></span> pitch deck loaded and ready to evaluate
             </div>
-            <h2 class="results-title">Investor Evaluation Report</h2>
-            <p class="results-startup-name" id="startup-name-display">Startup Name</p>
           </div>
-          <div class="results-actions">
-            <button class="btn-ghost" onclick="resetApp()">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.21"/></svg>
-              New Analysis
+
+          <!-- Analyze Button -->
+          <div class="analyze-row">
+            <button class="btn-analyze" id="analyze-btn" onclick="startAnalysis()">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              Run Analysis
             </button>
-            <button class="btn-primary-sm" onclick="exportReport()">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-              Export Report
-            </button>
+            <div class="analyze-note">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="opacity:0.5"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+              Typically 15–30 seconds
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- Loading Section -->
+      <section class="loading-section hidden" id="loading-section">
+        <div class="loading-inner">
+          <div class="loading-orb">
+            <div class="loading-pulse"></div>
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+          </div>
+          <div class="loading-title">Analyzing your pitch deck</div>
+          <div class="loading-steps">
+            <div class="loading-step active" id="step-1">
+              <div class="step-dot"></div>
+              <span>Extracting content from slides</span>
+            </div>
+            <div class="loading-step" id="step-2">
+              <div class="step-dot"></div>
+              <span>Identifying narrative sections</span>
+            </div>
+            <div class="loading-step" id="step-3">
+              <div class="step-dot"></div>
+              <span>Evaluating investor communication clarity</span>
+            </div>
+            <div class="loading-step" id="step-4">
+              <div class="step-dot"></div>
+              <span>Assessing founder storytelling flow</span>
+            </div>
+            <div class="loading-step" id="step-5">
+              <div class="step-dot"></div>
+              <span>Validating problem-solution fit</span>
+            </div>
+            <div class="loading-step" id="step-6">
+              <div class="step-dot"></div>
+              <span>Generating investor report</span>
+            </div>
           </div>
         </div>
+      </section>
 
-        <!-- Overall Score Dashboard -->
-        <div class="score-dashboard" id="score-dashboard">
-          <div class="score-main">
-            <div class="score-ring-wrap">
-              <svg class="score-ring" viewBox="0 0 120 120">
-                <circle class="ring-bg" cx="60" cy="60" r="52" />
-                <circle class="ring-fill" id="ring-fill" cx="60" cy="60" r="52"
-                  stroke-dasharray="326.7"
-                  stroke-dashoffset="326.7" />
-              </svg>
-              <div class="score-ring-inner">
-                <div class="score-number" id="overall-score">0</div>
-                <div class="score-label">/ 10</div>
+      <!-- Results Section -->
+      <section class="results-section hidden" id="results-section">
+        <div class="results-container">
+
+          <!-- Results Header -->
+          <div class="results-header">
+            <div class="results-header-left">
+              <div class="results-badge">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>
+                Analysis Complete
               </div>
+              <h2 class="results-title">Investor Evaluation Report</h2>
+              <p class="results-startup-name" id="startup-name-display">Startup Name</p>
             </div>
-            <div class="score-meta">
-              <div class="score-verdict" id="score-verdict">—</div>
-              <div class="score-desc" id="score-desc">—</div>
+            <div class="results-actions">
+              <button class="btn-ghost" onclick="resetApp()">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.21"/></svg>
+                New Analysis
+              </button>
+              <button class="btn-primary-sm" onclick="exportReport()">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                Export Report
+              </button>
             </div>
           </div>
-          <div class="score-dims">
-            <div class="dim-score" id="dim-clarity-score">
-              <div class="dim-score-label">Communication Clarity</div>
-              <div class="dim-score-bar-wrap">
-                <div class="dim-score-bar">
-                  <div class="dim-score-fill clarity-fill" id="bar-clarity"></div>
+
+          <!-- Overall Score Dashboard -->
+          <div class="score-dashboard" id="score-dashboard">
+            <div class="score-main">
+              <div class="score-ring-wrap">
+                <svg class="score-ring" viewBox="0 0 120 120">
+                  <circle class="ring-bg" cx="60" cy="60" r="52" />
+                  <circle class="ring-fill" id="ring-fill" cx="60" cy="60" r="52"
+                    stroke-dasharray="326.7"
+                    stroke-dashoffset="326.7" />
+                </svg>
+                <div class="score-ring-inner">
+                  <div class="score-number" id="overall-score">0</div>
+                  <div class="score-label">/ 10</div>
                 </div>
-                <div class="dim-score-num" id="num-clarity">—</div>
+              </div>
+              <div class="score-meta">
+                <div class="score-verdict" id="score-verdict">—</div>
+                <div class="score-desc" id="score-desc">—</div>
               </div>
             </div>
-            <div class="dim-score" id="dim-narrative-score">
-              <div class="dim-score-label">Narrative & Storytelling</div>
-              <div class="dim-score-bar-wrap">
-                <div class="dim-score-bar">
-                  <div class="dim-score-fill narrative-fill" id="bar-narrative"></div>
+            <div class="score-dims">
+              <div class="dim-score" id="dim-clarity-score">
+                <div class="dim-score-label">Communication Clarity</div>
+                <div class="dim-score-bar-wrap">
+                  <div class="dim-score-bar">
+                    <div class="dim-score-fill clarity-fill" id="bar-clarity"></div>
+                  </div>
+                  <div class="dim-score-num" id="num-clarity">—</div>
                 </div>
-                <div class="dim-score-num" id="num-narrative">—</div>
               </div>
-            </div>
-            <div class="dim-score" id="dim-psfit-score">
-              <div class="dim-score-label">Problem–Solution Fit</div>
-              <div class="dim-score-bar-wrap">
-                <div class="dim-score-bar">
-                  <div class="dim-score-fill psfit-fill" id="bar-psfit"></div>
+              <div class="dim-score" id="dim-narrative-score">
+                <div class="dim-score-label">Narrative &amp; Storytelling</div>
+                <div class="dim-score-bar-wrap">
+                  <div class="dim-score-bar">
+                    <div class="dim-score-fill narrative-fill" id="bar-narrative"></div>
+                  </div>
+                  <div class="dim-score-num" id="num-narrative">—</div>
                 </div>
-                <div class="dim-score-num" id="num-psfit">—</div>
+              </div>
+              <div class="dim-score" id="dim-psfit-score">
+                <div class="dim-score-label">Problem-Solution Fit</div>
+                <div class="dim-score-bar-wrap">
+                  <div class="dim-score-bar">
+                    <div class="dim-score-fill psfit-fill" id="bar-psfit"></div>
+                  </div>
+                  <div class="dim-score-num" id="num-psfit">—</div>
+                </div>
               </div>
             </div>
           </div>
+
+          <!-- Dimensions -->
+          <div class="dimensions-grid" id="dimensions-grid">
+
+            <!-- Dimension 1: Clarity -->
+            <div class="dimension-card" id="dim-clarity">
+              <div class="dim-header">
+                <div class="dim-icon clarity-icon">
+                  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                </div>
+                <div class="dim-header-text">
+                  <div class="dim-num">01</div>
+                  <h3 class="dim-title">Investor Communication &amp; Deck Clarity</h3>
+                  <p class="dim-desc">How well the deck communicates ideas in a clear, structured, investor-ready format</p>
+                </div>
+                <div class="dim-score-badge clarity-badge" id="badge-clarity">—</div>
+              </div>
+              <div class="dim-body" id="body-clarity">
+                <!-- Injected by JS -->
+              </div>
+            </div>
+
+            <!-- Dimension 2: Narrative -->
+            <div class="dimension-card" id="dim-narrative">
+              <div class="dim-header">
+                <div class="dim-icon narrative-icon">
+                  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h10"/></svg>
+                </div>
+                <div class="dim-header-text">
+                  <div class="dim-num">02</div>
+                  <h3 class="dim-title">Narrative &amp; Founder Storytelling</h3>
+                  <p class="dim-desc">Whether the deck follows a logical, compelling investment narrative</p>
+                </div>
+                <div class="dim-score-badge narrative-badge" id="badge-narrative">—</div>
+              </div>
+              <div class="dim-body" id="body-narrative">
+                <!-- Injected by JS -->
+              </div>
+            </div>
+
+            <!-- Dimension 3: Problem-Solution -->
+            <div class="dimension-card" id="dim-psfit">
+              <div class="dim-header">
+                <div class="dim-icon psfit-icon">
+                  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2v-4M9 21H5a2 2 0 0 1-2-2v-4m0 0h18"/></svg>
+                </div>
+                <div class="dim-header-text">
+                  <div class="dim-num">03</div>
+                  <h3 class="dim-title">Problem-Solution Fit (Investment Lens)</h3>
+                  <p class="dim-desc">Core validation: does the startup solve a real, scalable problem with a coherent solution?</p>
+                </div>
+                <div class="dim-score-badge psfit-badge" id="badge-psfit">—</div>
+              </div>
+              <div class="dim-body" id="body-psfit">
+                <!-- Injected by JS -->
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Investor Intelligence Summary -->
+          <div class="investor-summary" id="investor-summary">
+            <div class="is-header">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+              <h3>Investor Intelligence Summary</h3>
+            </div>
+            <div class="is-grid">
+              <div class="is-card is-strength">
+                <div class="is-card-title">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                  Top Strength
+                </div>
+                <p id="is-top-strength">—</p>
+              </div>
+              <div class="is-card is-risk">
+                <div class="is-card-title">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                  Biggest Risk
+                </div>
+                <p id="is-top-risk">—</p>
+              </div>
+              <div class="is-card is-missing">
+                <div class="is-card-title">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                  Critical Gap
+                </div>
+                <p id="is-missing">—</p>
+              </div>
+              <div class="is-card is-recommendation">
+                <div class="is-card-title">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                  VC Recommendation
+                </div>
+                <p id="is-recommendation">—</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Narrative Flow -->
+          <div class="narrative-flow-section" id="narrative-flow-section">
+            <div class="nf-header">
+              <h3>Narrative Flow Analysis</h3>
+              <p>Coverage of expected pitch deck sections</p>
+            </div>
+            <div class="narrative-flow" id="narrative-flow-grid">
+              <!-- injected by JS -->
+            </div>
+          </div>
+
         </div>
+      </section>
 
-        <!-- Dimensions -->
-        <div class="dimensions-grid" id="dimensions-grid">
+    </main>
 
-          <!-- Dimension 1: Clarity -->
-          <div class="dimension-card" id="dim-clarity">
-            <div class="dim-header">
-              <div class="dim-icon clarity-icon">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-              </div>
-              <div class="dim-header-text">
-                <div class="dim-num">01</div>
-                <h3 class="dim-title">Investor Communication & Deck Clarity</h3>
-                <p class="dim-desc">How well the deck communicates ideas in a clear, structured, investor-ready format</p>
-              </div>
-              <div class="dim-score-badge clarity-badge" id="badge-clarity">—</div>
-            </div>
-            <div class="dim-body" id="body-clarity">
-              <!-- Injected by JS -->
-            </div>
-          </div>
-
-          <!-- Dimension 2: Narrative -->
-          <div class="dimension-card" id="dim-narrative">
-            <div class="dim-header">
-              <div class="dim-icon narrative-icon">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3h18v18H3z" rx="2"/><path d="M7 7h10M7 12h10M7 17h6"/></svg>
-              </div>
-              <div class="dim-header-text">
-                <div class="dim-num">02</div>
-                <h3 class="dim-title">Narrative & Founder Storytelling</h3>
-                <p class="dim-desc">Whether the deck follows a logical, compelling investment narrative</p>
-              </div>
-              <div class="dim-score-badge narrative-badge" id="badge-narrative">—</div>
-            </div>
-            <div class="dim-body" id="body-narrative">
-              <!-- Injected by JS -->
-            </div>
-          </div>
-
-          <!-- Dimension 3: Problem-Solution -->
-          <div class="dimension-card" id="dim-psfit">
-            <div class="dim-header">
-              <div class="dim-icon psfit-icon">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-              </div>
-              <div class="dim-header-text">
-                <div class="dim-num">03</div>
-                <h3 class="dim-title">Problem–Solution Fit (Investment Lens)</h3>
-                <p class="dim-desc">Core validation: does the startup solve a real, scalable problem with a coherent solution?</p>
-              </div>
-              <div class="dim-score-badge psfit-badge" id="badge-psfit">—</div>
-            </div>
-            <div class="dim-body" id="body-psfit">
-              <!-- Injected by JS -->
-            </div>
-          </div>
-
+    <!-- Footer -->
+    <footer class="footer">
+      <div class="footer-inner">
+        <div class="footer-left">
+          <span class="footer-brand">VentureAI</span>
+          <span class="footer-sep">·</span>
+          <span>Built by Mohamed Dhia Al Islem Abidi</span>
         </div>
-
-        <!-- Investor Intelligence Summary -->
-        <div class="investor-summary" id="investor-summary">
-          <div class="is-header">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
-            <h3>Investor Intelligence Summary</h3>
-          </div>
-          <div class="is-grid">
-            <div class="is-card is-strength">
-              <div class="is-card-title">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
-                Top Strength
-              </div>
-              <p id="is-top-strength">—</p>
-            </div>
-            <div class="is-card is-risk">
-              <div class="is-card-title">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-                Biggest Risk
-              </div>
-              <p id="is-top-risk">—</p>
-            </div>
-            <div class="is-card is-missing">
-              <div class="is-card-title">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-                Critical Gap
-              </div>
-              <p id="is-missing">—</p>
-            </div>
-            <div class="is-card is-recommendation">
-              <div class="is-card-title">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-                VC Recommendation
-              </div>
-              <p id="is-recommendation">—</p>
-            </div>
-          </div>
+        <div class="footer-right">
+          AI analysis is for educational purposes. Always complement with human expert review.
         </div>
-
-        <!-- Narrative Flow -->
-        <div class="narrative-flow-section" id="narrative-flow-section">
-          <div class="nf-header">
-            <h3>Narrative Flow Analysis</h3>
-            <p>Coverage of expected pitch deck sections</p>
-          </div>
-          <div class="narrative-flow" id="narrative-flow-grid">
-            <!-- injected by JS -->
-          </div>
-        </div>
-
       </div>
-    </section>
+    </footer>
 
-  </main>
-
-  <!-- Footer -->
-  <footer class="footer">
-    <div class="footer-inner">
-      <div class="footer-left">
-        <span class="footer-brand">VentureAI</span>
-        <span class="footer-sep">·</span>
-        <span>Built by Mohamed Dhia Al Islem Abidi</span>
-      </div>
-      <div class="footer-right">
-        AI analysis is for educational purposes. Always complement with human expert review.
-      </div>
-    </div>
-  </footer>
+  </div><!-- .layout -->
 
   <script src="app.js"></script>
 </body>
