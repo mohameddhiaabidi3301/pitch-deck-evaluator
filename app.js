@@ -99,13 +99,15 @@ pdfjsLib.GlobalWorkerOptions.workerSrc =
 // ─── State ──────────────────────────────────────────────────
 let state = {
   apiKey:      localStorage.getItem('ventureai_key') || '',
+  groqKey:     localStorage.getItem('ventureai_groq_key') || '',
+  provider:    localStorage.getItem('ventureai_provider') || 'gemini',
   activeTab:   'upload',
   pdfText:     '',
   pastedText:  '',
   activeSample:'',
   isAnalyzing: false,
   isDemoMode:  false,
-  lastResult:  null   // stores the last analysis data for export
+  lastResult:  null
 };
 
 // ─── Sample Pitch Deck Texts ─────────────────────────────────
@@ -416,7 +418,14 @@ const DEMO_RESPONSE = {
 
 // ─── Initialize ──────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
-  if (state.apiKey) {
+  // Restore provider tab
+  if (state.provider === 'groq') {
+    setProvider('groq', false);
+  }
+  // Restore connected state
+  if (state.provider === 'groq' && state.groqKey) {
+    showConnected();
+  } else if (state.provider === 'gemini' && state.apiKey) {
     showConnected();
   }
 
@@ -431,7 +440,18 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 });
 
-// ─── API Key ─────────────────────────────────────────────────
+// ─── Provider Switching ──────────────────────────────────────
+function setProvider(name, save = true) {
+  state.provider = name;
+  if (save) localStorage.setItem('ventureai_provider', name);
+
+  ['gemini','groq'].forEach(p => {
+    document.getElementById(`ptab-${p}`).classList.toggle('active', p === name);
+    document.getElementById(`panel-${p}`).classList.toggle('hidden', p !== name);
+  });
+}
+
+// ─── API Keys ─────────────────────────────────────────────────
 function saveApiKey() {
   const key = document.getElementById('api-key-input').value.trim();
   if (!key || (!key.startsWith('AIza') && !key.startsWith('AQ'))) {
@@ -439,24 +459,49 @@ function saveApiKey() {
     return;
   }
   state.apiKey = key;
+  state.provider = 'gemini';
   localStorage.setItem('ventureai_key', key);
+  localStorage.setItem('ventureai_provider', 'gemini');
+  showConnected();
+}
+
+function saveGroqKey() {
+  const key = document.getElementById('groq-key-input').value.trim();
+  if (!key || !key.startsWith('gsk_')) {
+    shakeElement('groq-key-input');
+    return;
+  }
+  state.groqKey = key;
+  state.provider = 'groq';
+  localStorage.setItem('ventureai_groq_key', key);
+  localStorage.setItem('ventureai_provider', 'groq');
   showConnected();
 }
 
 function showConnected() {
   document.getElementById('api-setup').classList.add('hidden');
-  document.getElementById('api-connected').classList.remove('hidden');
   document.getElementById('demo-connected').classList.add('hidden');
+  const badge = document.getElementById('api-connected');
+  badge.classList.remove('hidden');
+  // Update badge label to show which provider is active
+  const label = badge.querySelector('.connected-badge');
+  if (label) {
+    label.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>
+      ${state.provider === 'groq' ? 'Groq Connected' : 'Gemini Connected'}`;
+  }
 }
 
 function disconnectApi() {
   state.apiKey = '';
+  state.groqKey = '';
   state.isDemoMode = false;
   localStorage.removeItem('ventureai_key');
+  localStorage.removeItem('ventureai_groq_key');
   document.getElementById('api-connected').classList.add('hidden');
   document.getElementById('demo-connected').classList.add('hidden');
   document.getElementById('api-setup').classList.remove('hidden');
   document.getElementById('api-key-input').value = '';
+  document.getElementById('groq-key-input').value = '';
 }
 
 // ─── Demo Mode ────────────────────────────────────────────────
@@ -562,9 +607,14 @@ function getPitchContent() {
 
 // ─── Main Analysis ───────────────────────────────────────────
 async function startAnalysis() {
-  // Allow demo mode to bypass API key check
-  if (!state.apiKey && !state.isDemoMode) {
-    shakeElement('api-key-input');
+  // Check we have a key for the active provider
+  const hasKey = state.isDemoMode ||
+    (state.provider === 'groq' && state.groqKey) ||
+    (state.provider === 'gemini' && state.apiKey);
+
+  if (!hasKey) {
+    const inputId = state.provider === 'groq' ? 'groq-key-input' : 'api-key-input';
+    shakeElement(inputId);
     document.getElementById('hero-section').scrollIntoView({ behavior: 'smooth' });
     return;
   }
@@ -603,9 +653,10 @@ async function startAnalysis() {
   try {
     let result;
     if (state.isDemoMode) {
-      // Simulate processing delay in demo mode
       await delay(3200);
       result = DEMO_RESPONSE;
+    } else if (state.provider === 'groq') {
+      result = await callGroqAPI(pitchContent);
     } else {
       result = await callGeminiAPI(pitchContent);
     }
@@ -637,10 +688,7 @@ async function callGeminiAPI(pitchContent) {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       contents: [{ parts: [{ text: prompt }] }],
-      generationConfig: {
-        temperature: 0.4,
-        maxOutputTokens: 4096
-      }
+      generationConfig: { temperature: 0.4, maxOutputTokens: 4096 }
     })
   });
 
@@ -652,6 +700,44 @@ async function callGeminiAPI(pitchContent) {
   const data = await response.json();
   const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text;
   if (!rawText) throw new Error('No response from Gemini API');
+
+  const cleaned = rawText.replace(/```json\n?/g,'').replace(/```\n?/g,'').trim();
+  return JSON.parse(cleaned);
+}
+
+// ─── Groq API Call ───────────────────────────────────────────
+async function callGroqAPI(pitchContent) {
+  const prompt = buildPrompt(pitchContent);
+  const url = 'https://api.groq.com/openai/v1/chat/completions';
+
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${state.groqKey}`
+    },
+    body: JSON.stringify({
+      model: 'llama-3.1-8b-instant',
+      messages: [
+        {
+          role: 'system',
+          content: 'You are an elite venture capital analyst. Always respond with valid JSON only — no markdown fences, no extra text, no explanation. Just the raw JSON object.'
+        },
+        { role: 'user', content: prompt }
+      ],
+      temperature: 0.4,
+      max_tokens: 4096
+    })
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.error?.message || `Groq API error ${response.status}`);
+  }
+
+  const data = await response.json();
+  const rawText = data.choices?.[0]?.message?.content;
+  if (!rawText) throw new Error('No response from Groq API');
 
   const cleaned = rawText.replace(/```json\n?/g,'').replace(/```\n?/g,'').trim();
   return JSON.parse(cleaned);

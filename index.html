@@ -56,27 +56,74 @@
         <!-- API Key Setup -->
         <div class="api-setup" id="api-setup">
           <div class="api-card">
-            <div class="api-header">
-              <div class="api-icon">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-              </div>
-              <div>
-                <div class="api-title">Connect Gemini API</div>
-                <div class="api-subtitle">Free at aistudio.google.com — no credit card required</div>
-              </div>
-            </div>
-            <div class="api-input-row">
-              <input type="password" id="api-key-input" class="api-input" placeholder="AIza... or AQ..." autocomplete="off" />
-              <button class="btn-primary" id="save-api-btn" onclick="saveApiKey()">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>
-                Connect
+
+            <!-- Provider Tabs -->
+            <div class="provider-tabs">
+              <button class="provider-tab active" id="ptab-gemini" onclick="setProvider('gemini')">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+                Gemini
+              </button>
+              <button class="provider-tab" id="ptab-groq" onclick="setProvider('groq')">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+                Groq
+                <span class="free-badge">FREE</span>
               </button>
             </div>
-            <div class="api-hint">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
-              Get your free key at <a href="https://aistudio.google.com" target="_blank">aistudio.google.com</a> — Get API Key
+
+            <!-- Gemini Panel -->
+            <div id="panel-gemini">
+              <div class="api-header">
+                <div class="api-icon">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                </div>
+                <div>
+                  <div class="api-title">Connect Gemini API</div>
+                  <div class="api-subtitle">Free at aistudio.google.com — no credit card required</div>
+                </div>
+              </div>
+              <div class="api-input-row">
+                <input type="password" id="api-key-input" class="api-input" placeholder="AIza... or AQ..." autocomplete="off" />
+                <button class="btn-primary" onclick="saveApiKey()">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>
+                  Connect
+                </button>
+              </div>
+              <div class="api-hint">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+                Get your free key at <a href="https://aistudio.google.com" target="_blank">aistudio.google.com</a> — Get API Key
+              </div>
             </div>
+
+            <!-- Groq Panel -->
+            <div id="panel-groq" class="hidden">
+              <div class="api-header">
+                <div class="api-icon" style="background:rgba(52,211,153,0.1);border-color:rgba(52,211,153,0.25);color:#34d399">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+                </div>
+                <div>
+                  <div class="api-title">Connect Groq API</div>
+                  <div class="api-subtitle">Generous free tier — no quota issues — very fast</div>
+                </div>
+              </div>
+              <div class="api-input-row">
+                <input type="password" id="groq-key-input" class="api-input" placeholder="gsk_..." autocomplete="off" />
+                <button class="btn-primary" onclick="saveGroqKey()">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>
+                  Connect
+                </button>
+              </div>
+              <div class="api-hint">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+                Get your free key at <a href="https://console.groq.com" target="_blank">console.groq.com</a> — API Keys — Create Key
+              </div>
+              <div class="groq-models-note">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                Uses llama-3.1-8b-instant — fast and free
+              </div>
+            </div>
+
           </div>
+
           <!-- Demo Option -->
           <div class="demo-banner">
             <span class="demo-divider"></span>
@@ -90,6 +137,7 @@
             </button>
           </div>
         </div>
+
 
         <!-- Connected State -->
         <div class="api-connected hidden" id="api-connected">
